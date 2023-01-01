@@ -1,0 +1,47 @@
+open inv
+open upmem
+open upmem_loop
+open utils_real
+open utils
+
+// Maps the input array inplace.
+inl map_inp f = run fun input output =>
+    global "#include <mram.h>"
+    global "__mram_noinit uint8_t buffer[1024*1024*64];"
+    inl block_size = 8
+    // Creates the WRAM buffers as inverse arrays.
+    inl buf_in = create block_size
+    inl buf_out = create block_size
+    inl len = length input
+    forBy {from=0; nearTo=len; by=block_size} fun from =>
+        inl nearTo = min len (from + block_size)
+        // Reads the MRAM into the WRAM buffer.
+        mram_read input buf_in {from nearTo}
+        for {from=0; nearTo=nearTo - from} fun i => 
+            set buf_out i (f (index buf_in i))
+        mram_write buf_out output {from nearTo}
+    0
+
+// Maps the input array.
+inl map f input = inl output = create (length input) in map_inp f input output . output
+
+inl main () =
+    global "import os"
+    global "from io import StringIO"
+    global "from sys import stdout"
+    global "import struct"
+
+    inl test_size = 16
+    inl input = 
+        zip (arange test_size)
+        <| zip (arange test_size)
+        <| arange test_size
+    inl input = rezip (fun x,y,z => {x y z}) input
+    $"print(!input)"
+    inl output = 
+        map (fun {x y z} => 
+            inl sqr x = x*x
+            sqr (x + y + z)
+            ) input
+    $"print(!output)"
+    ()

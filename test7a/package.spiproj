@@ -1,0 +1,6 @@
+packages: |core-
+modules:
+    upmem
+    utils_real*
+    utils
+    main

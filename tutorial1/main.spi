@@ -1,0 +1,7 @@
+inl main() =
+    inl f (a,b) = join
+        a+b : i32
+    inl _ = f (1,2)
+    inl _ = f (3,4)
+    inl _ = f (dyn (5,6))
+    0i32
