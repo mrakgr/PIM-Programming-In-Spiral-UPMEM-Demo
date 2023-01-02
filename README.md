@@ -1922,6 +1922,6 @@ If you try programming in Spiral and target F# or Python, you'll quickly see a h
 
 It is essentially times like this. A company has novel piece of hardware. It has maybe a Python and a C backend, and is filled to the brim with low level C programmers. Maybe it is aware that interop with existing platforms as well as writing reusable libraries is a problem its needs to resolve, but has no idea how to proceed. None of the existing languages offer a clean solution to this problem.
 
-I mean which other language support programming in staged functional programming style apart from Spiral? None, right? And that is what they need.
+I mean which other language support programming in the staged functional programming style apart from Spiral? None, right? And that is what they need.
 
 ...
