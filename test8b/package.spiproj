@@ -1,8 +1,0 @@
-packages: |core-
-modules:
-    inv
-    upmem
-    upmem_loop
-    utils_real*
-    utils
-    main

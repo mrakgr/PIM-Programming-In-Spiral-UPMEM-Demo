@@ -1,0 +1,19 @@
+// `function_term_slots_get` and `function_term_slots_set` example.
+
+inl main () =
+    inl ~(a,b,c) = 1i32,2i32,3i32
+    inl f () = a,b,c
+    inl x = f()
+    $"print(!x)"
+
+    inl g x : i32 = x * 2
+    inl f' = real 
+        open real_core
+        inl slots = function_term_slots_get f
+        inl rec loop = function
+            | () => ()
+            | a,b => g a, loop b
+        function_term_slots_set f (loop slots)
+    inl x = f'()
+    $"print(!x)"
+    ()

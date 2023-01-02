@@ -8,19 +8,20 @@ let compile_kernel (kernel_i : i32) =
     $"!file.write(kernels[!kernel_i])"
     $"if os.system(f'dpu-upmem-dpurte-clang -o kernels/g{!kernel_i}.dpu kernels/g{!kernel_i}.c') \!= 0: raise Exception('Compilation failed.')"
 
-inl run forall a. (f : () -> i32) (out : a) : a = join
-    inl kernel_i, vars = join_backend UPMEM_C_Kernel f()
+inl run forall a b. (f : a -> b -> i32) (input : a) (output : b) : b = join
+    real if has_free_vars f then real_core.error_type "The body of the kernel function in this version of `run` should not have any free variables. Pass them in through input and output instead."
+    inl kernel_i, free_vars = join_backend UPMEM_C_Kernel f input output
+    inl free_vars_s = real dpu_tags free_vars
     compile_kernel kernel_i
     inl dpu = $"DpuSet(nr_dpus=1, binary=f'kernels/g{!kernel_i}.dpu', profile='backend=simulator')" : $"DpuSet"
-    inl m = real dpu_pack dpu vars
+    real dpu_pack dpu free_vars_s free_vars
     $"!dpu.exec()" // Note: Putting in log=stdout and not using a printf inside the kernel results in an error.
-    real dpu_unpack dpu m out
-
+    real dpu_unpack dpu {vars=free_vars_s} output
+    output
+    
 inl assign forall t. (a : t) (b : t) : () = real assign a b
-inl scalar_map_inp forall a b. (f : a -> b) ~(in' : a) ~(out : b) : b = join
-    run (fun () => assign out (f in') . 0i32) out
-
-inl scalar_map forall a b. (f : a -> b) ~(in' : a) = scalar_map_inp f in' (real default `b)
+inl scalar_map_inp f = run (fun inp out => assign out (f inp) . 0i32)
+inl scalar_map forall a b. (f : a -> b) ~(inp : a) = scalar_map_inp f inp (real default `b)
 
 inl main () =
     global "import os"

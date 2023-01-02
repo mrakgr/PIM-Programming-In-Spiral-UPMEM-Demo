@@ -1,0 +1,26 @@
+// Does the upmem loop work?
+
+open upmem
+open upmem_loop
+open utils_real
+open utils
+
+inl add2 forall dim {number} t {number}. = run fun (b,c) (a : a dim t) =>
+    global "__mram_noinit uint8_t buffer[1024*1024*1];"
+    for {from=0; nearTo=length a} fun i =>
+        set a i (index b i + index c i)
+    0
+
+inl main () =
+    global "import os"
+    global "from io import StringIO"
+    global "from sys import stdout"
+    global "import struct"
+
+    inl test_size = 64
+    inl a,b,c = arange test_size, arange test_size, arange test_size
+    $"print(!a)"
+    add2 (b,c) a
+    $"print(!a)"
+
+    ()

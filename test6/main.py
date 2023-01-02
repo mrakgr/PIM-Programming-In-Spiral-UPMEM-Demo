@@ -98,12 +98,10 @@ def method0(v0 : i32, v1 : i32, v2 : i32) -> i32:
     del v0
     v4.v1 = bytearray(struct.pack('i',v1))
     del v1
-    v4.v2 = bytearray(struct.pack('i',v2))
-    del v2
     v4.exec()
-    v5 = v4.v2.int32()
+    v2 = v4.v2.int32()
     del v4
-    return v5
+    return v2
 def method2(v0 : i32, v1 : i32, v2 : i32, v3 : i32) -> i32:
     v4 = 1
     method1(v4)
@@ -115,12 +113,10 @@ def method2(v0 : i32, v1 : i32, v2 : i32, v3 : i32) -> i32:
     del v1
     v5.v2 = bytearray(struct.pack('i',v2))
     del v2
-    v5.v3 = bytearray(struct.pack('i',v3))
-    del v3
     v5.exec()
-    v6 = v5.v3.int32()
+    v3 = v5.v3.int32()
     del v5
-    return v6
+    return v3
 def method3(v0 : i32, v1 : i32, v2 : i32, v3 : i32, v4 : i32) -> i32:
     v5 = 2
     method1(v5)
@@ -134,27 +130,24 @@ def method3(v0 : i32, v1 : i32, v2 : i32, v3 : i32, v4 : i32) -> i32:
     del v2
     v6.v3 = bytearray(struct.pack('i',v3))
     del v3
-    v6.v4 = bytearray(struct.pack('i',v4))
-    del v4
     v6.exec()
-    v7 = v6.v4.int32()
+    v4 = v6.v4.int32()
     del v6
-    return v7
+    return v4
 def method4(v0 : i32, v1 : i32, v2 : i32) -> i32:
     v3 = 3
     method1(v3)
     v4 = DpuSet(nr_dpus=1, binary=f'kernels/g{v3}.dpu', profile='backend=simulator')
     del v3
     v4.v0 = bytearray(struct.pack('i',v0))
-    del v0
     v4.v1 = bytearray(struct.pack('i',v1))
     del v1
     v4.v2 = bytearray(struct.pack('i',v2))
     del v2
     v4.exec()
-    v5 = v4.v0.int32()
+    v0 = v4.v0.int32()
     del v4
-    return v5
+    return v0
 def main():
     v0 = 1
     v1 = 2

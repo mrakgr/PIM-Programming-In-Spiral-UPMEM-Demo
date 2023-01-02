@@ -1,0 +1,45 @@
+nominal upmem_kernel_array dim t = {len : dim;  offset : dim}
+nominal global_array_ptr dim t = $"__mram_ptr `t *"
+
+inl at_upmem forall dim t. (upmem_kernel_array {len offset} : _ dim t) : global_array_ptr dim t = $"(__mram_ptr `t *) (buffer + !offset)"
+inl index_upmem forall dim t. (upmem_kernel_array {len offset} as a : _ dim t) (i : dim) : t = inl a = at_upmem a in $"!a[!i]"
+inl set_upmem forall dim t. (upmem_kernel_array {len offset} as a : _ dim t) (i : dim) (x : t) : () = inl a = at_upmem a in $"!a[!i] = !x"
+inl length_upmem forall dim t. (upmem_kernel_array {len offset} : _ dim t) : dim = len
+
+inl at forall dim t. (a : a dim t) : global_array_ptr dim t = real 
+    match a with 
+    | upmem_kernel_array _ => at_upmem `dim `t a
+
+inl index forall dim t. (a : a dim t) (i : dim) : t = real 
+    match a with
+    | upmem_kernel_array _ => index_upmem `dim `t a i
+    | _ => typecase `a with ~ar ~dim ~t => index `ar `dim `t a i
+
+inl set forall dim t. (a : a dim t) (i : dim) (x : t) : () = real 
+    match a with
+    | upmem_kernel_array _ => set_upmem `dim `t a i x
+    | _ => typecase `a with ~ar ~dim ~t => set `ar `dim `t a i x
+
+inl length forall dim t. (a : a dim t) : dim = real 
+    match a with
+    | upmem_kernel_array _ => length_upmem `dim `t a
+    | _ => typecase `a with ~ar ~dim ~t => length `ar `dim `t a
+
+nominal array_ptr dim t = $"`t *"
+
+inl ptr_index forall dim t. (a : array_ptr dim t) (i : dim) : t = $"!a[!i]"
+inl ptr_set forall dim t. (a : array_ptr dim t) (i : dim) (x : t) : () = $"!a[!i] = !x"
+
+inl local_ptr forall dim t. (block_size : dim) : array_ptr dim t = 
+    assert (lit_is block_size) "The block size should be a compile time literal."
+    $"__dma_aligned `t v$[!block_size]"
+
+inl mram_read forall dim {number} t. (src : a dim t) (dst : array_ptr dim t) {from nearTo} =
+    inl size : dim = nearTo - from
+    inl src = at src
+    $"mram_read(!src + !from,!dst,!size * sizeof(`t))" : ()
+
+inl mram_write forall dim {number} t. (src : array_ptr dim t) (dst : a dim t) {from nearTo} =
+    inl size : dim = nearTo - from
+    inl dst = at dst
+    $"mram_write(!src,!dst + !from,!size * sizeof(`t))" : ()
