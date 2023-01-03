@@ -3,9 +3,10 @@
 - [Introduction](#introduction)
 - [Important Notes on UPMEM hardware](#important-notes-on-upmem-hardware)
 - [How To Make A Language Backend Tutorial](#how-to-make-a-language-backend-tutorial)
+    - [The Goal Of This Tutorial](#the-goal-of-this-tutorial)
     - [Prerequisites](#prerequisites)
     - [test8 (Part 1)](#test8-part-1)
-        - [Intro to inverse arrays](#intro-to-inverse-arrays)
+        - [Intro To Inverse Arrays](#intro-to-inverse-arrays)
         - [The main program](#the-main-program)
         - [Globals](#globals)
         - [Macros](#macros)
@@ -25,6 +26,17 @@
 - [Why This Is So Great](#why-this-is-so-great)
     - [What Is Not Great About Spiral](#what-is-not-great-about-spiral)
     - [What Is Truly Great About Spiral](#what-is-truly-great-about-spiral)
+    - [Another Cool Thing About Spiral](#another-cool-thing-about-spiral)
+    - [A Look At The Future](#a-look-at-the-future)
+    - [A Look At The Present](#a-look-at-the-present)
+- [UPMEM: The Good, Bad And Ugly](#upmem-the-good-bad-and-ugly)
+    - [Good: No Warp Divergence](#good-no-warp-divergence)
+    - [Good: Programming Model](#good-programming-model)
+    - [Ugly: The Global Variables](#ugly-the-global-variables)
+    - [Ugly: Using Symbol Names For Accessing Variable From Host](#ugly-using-symbol-names-for-accessing-variable-from-host)
+    - [Bad: AI Capabilities](#bad-ai-capabilities)
+    - [Bad: The Silent Treatment](#bad-the-silent-treatment)
+- [Conclussion](#conclussion)
 
 <!-- /TOC -->
 
@@ -49,13 +61,26 @@ The course itself has excellent coverage of device specifics, but to summarize:
 * They can't communicate with each other by sending messages for example. Instead they have to send their data back to the host CPU and communicate that way.
 * They can only do integer arithmetic using on-board device logic, and have to rely on software emulation for floats. This results in 10x lower performance compared to ints. And unlike CPUs which are memory bound, these devices are compute bound.
 
-[This repo](https://github.com/CMU-SAFARI/prim-benchmarks) has a paper with the benchmark results. Because of these last two points, the devices are no good for neural nets for example. Also internal to each DPU, they have software threads they call tasklets. According to the paper, on most tasks an 11 of them is needed to fully saturate the device. Unlike the GPUs threads, they aren't tied to each other and are independent like regular threads are on a CPU.
+[This repo](https://github.com/CMU-SAFARI/prim-benchmarks) has a paper with the benchmark results. Because of these last two points, the devices are no-good for neural nets for example. Also internal to each DPU, they have software threads they call tasklets. According to the paper, on most tasks an 11 of them is needed to fully saturate the device. Unlike the GPUs threads, they aren't tied to each other and are independent like regular threads are on a CPU.
 
 I only have access to the SDK simulator that goes up to simulating a single DPU, so I won’t be demonstrating how to program multiple DPUs or how to deal with software concurrency on them. Merely, I want to show how to do something very basic, that would nonetheless be very difficult to do in any other language.
 
 # How To Make A Language Backend Tutorial
 
-This tutorial is technical and if you just want the rantz instead of me guiding you through 1,900 lines of code, skip to the last section where I discuss informally why Spiral is great and various other things on my mind.
+## The Goal Of This Tutorial
+
+This tutorial is technical and if you just want the rantz instead of me guiding you through 1,900 lines of code, skip to the last section where I discuss informally why Spiral is great and various other things on my mind. Just read the intro to inverse arrays so you know what they are.
+
+What I want to demonstrate is two things:
+
+* How to pass primitives over the platform and language boundaries. 
+* How to implement inverse arrays as they are so important to language interop.
+
+The way this tutorial is structured is that I just show you a bunch of code, offer some commentary on it, and you have to think about and understand it. In particular, `test8` would be too much to take in at once, so after presenting the final result, I go from the start and gradually build up towards it. I expect that for Spiral specific language features, you'll need to take a look at the docs on the main site in order to understand them and I won't remind you at every turn to do that. It is simply impossible to do this tutorial so it caters to people of every skill level. I know that sometimes I talk down, sometimes assume you're an expert, so what I've done is created a path telling you in what order to think about things and where to place your attention for optimal learning. 
+
+All the fragments presented in the tutorial are quite simple. Despite how they might appear they are often just maps and folds over tuples and records. But that simplicity has a strong power. I believe that the staged functional style of programming is not possible in any other language than Spiral. In the future, it will be possible in any language because it is impossible to write the kinds of programs written with any other design. So for that reason Spiral is worth studying.
+
+If you are a person working on novel hardware and want better software support, this is what you need to learn because other languages will not give you what you need. It is impossible to lead a hardware revolution without innovating on the software side.
 
 ## Prerequisites
 
@@ -67,7 +92,7 @@ If you want to run these example you need:
 
 ## test8 (Part 1)
 
-### Intro to inverse arrays
+### Intro To Inverse Arrays
 
 This is the final result. It is a generic map kernel that takes in inverse arrays and maps them using a provided function. It is similar to how in F# you could map over an array like the following...
 
@@ -81,7 +106,7 @@ To get the array with the elements multiplied by 2. Passing the above into F# in
 val it: int array = [|2; 4; 6|]
 ```
 
-You can use `Array.map` to map over arbitrary data structures such as tuples.
+You can use `Array.map` to map over arbitrary data structures such as tuples. Also in F#:
 
 ```fs
  [|(1,2);(3,4);(5,6)|] |> Array.map (fun (x,y) -> x+y, x-y, x*y)
@@ -96,9 +121,11 @@ An inverse tuple array would have each of the tuple fields in a separate arrays.
 
 Since you can only transfer primitive ints and floats over as well as arrays of them over interop boundaries, they are especially useful for language interop. It is not actually possible to transfer an Python array of tuples to the DPU, or an F# array of heap allocated tuples to the GPU, so splitting them up into primitives is absolutely necessary in order to do this cleanly.
 
+While working on a Cuda backend back in 2018 for the early version of Spiral, I at first used [structs](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/struct) to transfer tuple arrays over to the GPU. What I'd found then is that the .NET struct would be arranged and padded differently than the C one. So I added some pragmas to make sure they are packed tightly and ordered exactly, and then the transfers would work. Then I'd look at the LLVM IL on the Cuda side and find that it literally deserializing the arguments byte by byte due to packed C struct being a weird foreign structure. A lot of ugly code was being generated to do this. Later I realized how to do inverse arrays and all those problems went away. With inverse arrays I'd be just transfering primitive arrays over the platform boundaries.
+
 ### The main program
 
-Here is an example of a Spiral function that maps over them. I'll explain what it does step by step as I go along.
+Here is an example of a Spiral function that maps over inverse arrays. I'll explain what it does step by step as I go along.
 
 ```sl
 open inv
@@ -1846,7 +1873,7 @@ open iam_real
 nominal inv_array (ar : * -> * -> *) dim el = {len : dim; arrays : `(infer `ar `dim `el)}
 ```
 
-Anyway, now you should be convinced that the inverse arrays in fact genuine typing in Spiral. You can't construct nominals in arbitrary ways, their construction has to adhere to their blueprint.
+Anyway, now you should be convinced that the inverse arrays in fact provide genuine typing in Spiral. You can't construct nominals in arbitrary ways, their construction has to adhere to their blueprint.
 
 ```sl
 // Creates an inverse form arrays.
@@ -1910,9 +1937,9 @@ It might not seem impressive at first glance, but you have to consider what Spir
 
 First of all, let me do an overview of what Spiral is not competing against. At the time of writing it has a F#, C and Python backends in addition to the UPMEM one presented here.
 
-Compared to F# for example, Spiral gives tight control over inlining and specialization, so I can imagine it being used in performance sensitive applications on the .NET platform. It would probably crush C# for such a purpose thanks to its generative capabilities. But even so, this isn't really my aim as a language designer. If people want to use it for this purpose that is fine, but I am not going to try to push Spiral into such a crowded field by myself. The people in that domain can handle themselves. Maybe if Spiral gets popular, people will realize just how far staged functional programming can get them.
+Compared to F# for example, Spiral gives tight control over inlining and specialization, so I can imagine it being used in performance sensitive applications on the .NET platform. It would probably crush C# for such a purpose thanks to its generative capabilities. But even so, this isn't really my aim as a language designer. If people want to use it for this purpose that is fine, but I am not going to try to push Spiral into such a crowded field by myself. The people in that domain can handle themselves. Maybe if Spiral gets popular, people will realize just how far staged functional programming can get them. My sense though is that even in domains where people clamor for performance, they aren't necessarily reaching out for it.
 
-Compared to C, Spiral is way better. It has a ref counted backends, I could do some extensions to the system to manage file handles and GPU memory and it would be quite nice to use. Compared to other functional languages, Spiral is very efficient, so the negative impacts of ref counting on performance would be minimized. Still, just how many C language replacements are there? Do I really want to say my goal is to push into that crowded field? Every year, 10 C replacement languages get made. It is very easy to be better than C. I'll stay out of that warzone.
+Compared to C, Spiral is way better. It has a ref counted backend, I could do some easy extensions to the system to manage file handles and GPU memory and it would be quite nice to use. Compared to other functional languages, Spiral is very efficient, so the negative impacts of ref counting on performance would be minimized. Still, just how many C language replacements are there? Do I really want to say my goal is to push into that crowded field? Every year, 10 C replacement languages get made. It is very easy to be better than C. I'll stay out of that warzone.
 
 Compared to Python, Spiral has minimal advantages when using it as a platform. I realize that in 2021, back when Spiral had a Cython backend instead and I tried benchmarking it. Cython presents itself as a speedy alternative to Python, but the reality is that if you are allocating any kind of Python objects, and you are going to be doing so for any code of note, you performance will crater down to the Python level. I benchmarked almost identical kinds of code generated by the F# and the Cython backends, and the F# one was 1,000x times faster! It would have been cool to present a speedy alternative to Python, but Spiral's advantages don't matter here.
 
@@ -1922,6 +1949,203 @@ If you try programming in Spiral and target F# or Python, you'll quickly see a h
 
 It is essentially times like this. A company has novel piece of hardware. It has maybe a Python and a C backend, and is filled to the brim with low level C programmers. Maybe it is aware that interop with existing platforms as well as writing reusable libraries is a problem its needs to resolve, but has no idea how to proceed. None of the existing languages offer a clean solution to this problem.
 
-I mean which other language support programming in the staged functional programming style apart from Spiral? None, right? And that is what they need.
+The other languages all try to silo the users in their own platform. I said though, I can't really compete with Spiral against other languages on their home turf. But consider thought having Spiral compete with two languages I consider its rivals: Rust and Julia, on a device like UPMEMs.
 
-...
+Rust. 
+
+Rust has famously huge executables.
+
+https://www.google.com/search?q=rust+hello+world+size
+https://www.google.com/search?q=rust+runtime&oq=rust+runtime
+> How big is the Rust runtime?
+> The default Rust helloworld (as made with cargo new ) doesn't have any unique dynamic dependencies, holding everything but basic C runtime stuff in a 1.6M executable; with tweaks (optimize for size, using LTO, aborting on panic), it drops to 0.6M
+
+UPMEM has 24kb of IRAM. It would be hard to fit such large programs on it. Maybe it would be possible to fit it into MRAM and load it dynamically. Maybe if the goal was to specifically target niche hardware, the Rust compiler could be adjusted so its runtime does not take such an absurd amount of space. But could you adjust the Rust compiler so it compiles to Python + C like I've demonstrated with Spiral? Anything can be done with effort, but how long would that take with Rust? Could you adjust Rust so arbitrary functions, tuples and records could be passed from host to device like I've demonstrated with Spiral? Could you make an inverse array implementation succinctly and easily like in Spiral? You need bottom-up staged functional programming to do this and as far as I know Rust does not have it.
+
+Julia.
+
+Julia is a dynamic language, so it would have the same problem if you'd try to run Python directly on an UPMEM device. Again, you can't really really place Julia's runtime and JIT compiler onto such a device. It works with CPUs because they have big shared pool of memory, but on future devices, their computational cores are going to be sharded and not have shared memory. So any runtime would need to be replicated on each computational core.
+
+I am not a Julia expert, but since it does have GPU capabilities, I'd assume it has a way of JIT compiling the necessary kernels for it. But at that point you are just doing the same thing as Spiral, so it becomes a question of which language is easier to adapt to the needs of the novel hardware.
+
+I started working on the UPMEM backend for Spiral in mid December and it took me 2 weeks of full time work to finish it. I had to take a week to do things like tighten up the reference counting pass on the C backend, improve the pattern matcher and add new Ops to the language for the sake of interop. That is the kind of work that won't be recurring if I needed to do a backend for a device other than UPMEM. So a week is a decent estimate. After that the novel piece of hardware will have access to the entirety of Python's and C's ecosystem. Or .NET's and C++'s.
+
+Right now Spiral does not have a Cuda backend, but since I am familiar with it, I could do it half a week.
+
+Could a Julia or a Rust or some other language expert boast about the same thing? Well, obviously I can't claim that I could do the same thing for arbitrary novel hardware, but Spiral is fast to set up.
+
+And as a language Spiral is very expressive. Going from programming the kernels in a low level language like C to a high level functional language like Spiral would result in a huge increase in productivity.
+
+## Another Cool Thing About Spiral
+
+Spiral offers you unparalleled control over specialization. Going back to an earlier example.
+
+```sl
+// Maps the input array inplace.
+inl map_inp f = run fun input output =>
+    global "#include <mram.h>"
+    global "__mram_noinit uint8_t buffer[1024*1024*64];"
+    inl block_size = 8
+    // Creates the WRAM buffers as inverse arrays.
+    inl buf_in = create block_size
+    inl buf_out = create block_size
+    inl len = length input
+    forBy {from=0; nearTo=len; by=block_size} fun from =>
+        inl nearTo = min len (from + block_size)
+        // Reads the MRAM into the WRAM buffer.
+        mram_read input buf_in {from nearTo}
+        for {from=0; nearTo=nearTo - from} fun i => 
+            set buf_out i (f (index buf_in i))
+        mram_write buf_out output {from nearTo}
+    0
+```
+
+If you look at the generated code for `test/main.spi` in `test/main.py`, and look at the C kernel, you'll see something interesting.
+
+```c
+bool method1(uint32_t v0, uint32_t v1){
+    bool v2;
+    v2 = v1 < v0;
+    return v2;
+}
+int32_t main(){
+    __dma_aligned int32_t v0[8ul];
+    __dma_aligned int32_t v1[8ul];
+    __dma_aligned int32_t v2[8ul];
+    __dma_aligned int32_t v3[8ul];
+```
+
+Always the `__host` variables in the UPMEM kernel are printed directly behind the `main` function. But here there aren't any. So how am I transfering the array lengths? The array offsets which serve as pointers? In fact in this example, I kept them as literals and they all got inlined into the kernel itself!
+
+```sl
+    inl test_size = 16
+    inl input = 
+        zip (arange test_size)
+        <| zip (arange test_size)
+        <| arange test_size
+```
+
+It is this `test_size` here. Had I written it like `inl ~test_size = 16` or `inl test_size = dyn 16`, the size would be a runtime variable and the generated code would be like...
+
+```c
+__host uint32_t v0;
+__host uint32_t v1;
+__host uint32_t v2;
+__host uint32_t v3;
+int32_t main(){
+    __dma_aligned int32_t v4[8ul];
+    __dma_aligned int32_t v5[8ul];
+    __dma_aligned int32_t v6[8ul];
+    __dma_aligned int32_t v7[8ul];
+```
+
+This would be 4 input variables. One of them is the array length, and the others are the offsets for the 4 arrays in the example. 3 of offsets are runtime vars, but 1 array has a offset of 0 which gets inlined hence only 3 offsets need to be passed into the kernel.
+
+Imagine trying to do this in a language like C++. How much messing with templates would enabling this kind specialization require? In Spiral this is very easy.
+
+## A Look At The Future
+
+When I imagine the future, it might not be just the CPU calling out to the DPU like in this backend here. Maybe the CPU will need to send data over language boundaries to an UPI which might then call its own local GPU. There might be arbitrary hierarchies of hardware, each having their local memory. Dynamic languages have really had a field day over the last few decades, but the move towards PIM programming will be a bottleneck event. Maybe people will overlook the work I did on Spiral. But if so, I feel it is absolutely certain that a language with strong partial evaluation capabilities will emerge dominant in this new environment.
+
+The reason is that there simply isn't any other design direction to take. Rust for example doesn't fundamentally solve the issue of backend interop, while Spiral does. Without resolving that...
+
+You'll be writing code like this:
+
+https://github.com/CMU-SAFARI/prim-benchmarks/blob/main/VA/host/app.c
+https://github.com/CMU-SAFARI/prim-benchmarks/blob/main/VA/dpu/task.c
+
+That is a lot of work for adding two vectors together! You can't abstract this in a language like C. UPMEM has a Python backend, so the stuff on the host side would be less verbose, but still you'd need to handle passing all those ints, int pointers, copying to MRAM and back by yourself.
+
+Back in late 2016 I had this problem when I was working on an ML library in F#. I needed to have Cuda kernels for the ML library. .NET had good bindings for the platform. But the most I could for the sake of compiling Cuda kernels was to have them as strings. And then I'd insert text fragments as macros. I'd have a map kernel that took in two input arrays and outputted one. So I'd have one kernel where I'd pass in a raw text string "a + b" for vector addition, "a * b" for vector multiplication. Some operations would take 1 inputs or 3 inputs, and I'd need to make separate kernels for that. I'd need to write wrappers for them. Not to mention the fold kernels and whatever else.
+
+Pretty soon half of the ML library was made up of Cuda kernel strings!
+
+You can do a library like that admittedly. You can write all the kernels in C and then wrap them in the library. You can use macros and other kinds of code generation to get some code reuse. But I said to myself: 'GPUs are shit, and this ML library does not matter, but is this how I am going to be programming future hardware? Raw text strings? Is this going to get me to the level of programming superintelligent agents on far better hardware that is going to exist in the future? I am struggling to pass an array onto the GPU here!'
+
+At first I didn't set out to make a language. That would have taken too long. So I started working on a code generator for the ML library. But that only got me so far. So I wanted to give it a type system. The academic literature wasn't helpful so I came up with my own completely novel realizing only a few months in that I was working on a partial evaluator. But it was hard to program so I gave it good syntax, a parser and good error messages. The partial evaluator was slow so I made the pre compilation passes. It was still difficult to program so in 2020 and 2021, I had to study concurrency in order to give it proper editor support. The bottom-up type system while very useful and powerful was tedious in practice, so I built the vanilla top-down type system that is easier to use. It took over 3 years of full time work to get Spiral to its current level.
+
+The lesson from all of this is that languages are fancy code generators. If you really have a need so pressing that you need to build a codegen, you should be careful because that is the gateway drug to full blown PL development.
+
+## A Look At The Present
+
+What tripped my up in my programming path is that I didn't expect the backpropagation algorithm would be dominant for so long. It is very poorly suited to reinforcement learning, and everything I want to do with ML involves that. In mid-2010s I thought that if I gave the field a couple of years to play around, they would surely figure out something better. They didn't. The field right now is very disgusting, and it is all a consequence of the lack of the foreseen algorithmic development. It also impacted the behavior of AI chip companies in a way that does not suit me.
+
+When supervised learning is all that works well, that is what everyone will be doing. And supervised learning favors huge datasets and big machines. It is a rich man's game.
+
+So as a consequence the vast majority of such chip vendors are going after the big fish. Graphcore for example leases its machine for 9,000$ in its cheapest version. You can't just get one of those to play with it. They are so expensive that the only thing you'd use them for is crunching large workloads 24/7. As for the rest of AI hardware companies, they are so tight lipped about their products you barely even heard about them. This makes it difficult for me to shop Spiral around.
+
+Had better algorithms been discovered, you'd have these AI startups targetting the consumer, like the GPU ones do. I'd be able to have some real fun with that. Rather than trying to futilely get in touch with AI companies, I could instead have targetted the community surrounding these chips. But they are not there.
+
+It is a chicken and an egg problem. More than just servicing these AI chip companies, I need their hardware to do research and GPUs won't suffice, but all of a sudden I am priced out of the game because the needed research hasn't been done.
+
+At first I thought that I could just leave it to the ML community to find better algorithms, but now I feel it is my own responsibility since they are so incompetent. It is not like I am any better. I tried figuring it out for many years, and couldn't discover anything tangible. So the vision that I had is that if a piece of hardware is powerful enough, it would be possible to write a [genetic programming](https://www.google.com/search?q=genetic+programming&oq=genetic+programming) system and have it infer the right way to use the hardware. In essence, good enough hardware is also a catalyst for algorithmic discovery. Good enough hardware will tell you how to use it on its own...assuming the language you have to interact with it is good enough.
+
+Well, isn't it great that I have Spiral? It would hard to do this kind of research in C.
+
+Now how do I get the hardware? Can anyone reading this help? I am offering Spiral backends in return, in addition to other programming services.
+
+# UPMEM: The Good, Bad And Ugly
+
+## Good: No Warp Divergence
+
+Imagine a 3 legged race, the kind where two people tie one of their legs to each other. Now imagine such a race with 32 people tie to each other. That is how GPU programming is like. You have 32 threasd bundled in warps, and if one thread wants to go down one branch and the other another, you get what is called warp divergence. This kills performance.
+
+UPMEM's DPUs don't have such problems. Their DPUs are independent and so are their tasklets. Meaning you can program them much like regular CPUs without worrying what the rest of the threads are doing. They aren't joined at the foreleg and don't have to race in lockstep.
+
+Being able to program a PIM chip like UPMEMs confirmed one of my predictions. The future AI/PIM chips can be expected to be more general purpose programming devices than GPUs are. And that is a good thing. It means I could write an interpreter needed for a genetic programming system without needing to worry about most of the warp being dead.
+
+GPUs are really overstaying their welcome when it comes to AI research. I really wish somebody would come along and kill Nvidia.
+
+## Good: Programming Model
+
+During the first 10 days, I thought this would be in the Bad as I was delusional about it messing up the pointers, but really, there is nothing wrong with it. Yes sure, it has weird and annoying alignment restrictions, and its designers attempts to improve upon C ended up backfiring and making it worse than Cuda. I'll go more into it in the later sections, but at its base, you can't say the model is broken. If UPMEM wants to release DPUs with floating point capabilities in the future, it has a good basis to work from.
+
+UPMEM is not a good example of a company doomed by its programming model. That would be Graphcore.
+
+## Ugly: The Global Variables
+
+The UPMEM designers have probably heard that globals are bad, but haven't understood why that is, so I might as well take the chance to explain. I'll give a concrete example of how it messes up the compilation model. If you go into `test2` or `test3`, you'll see that every kernel requires its own separate compilation. Every UPMEM kernel has a `main` function that gets executed and those `__host` variables in the global scope take the place of the input arguments.
+
+Now compare that to Cuda's programming model. In Cuda you'd annotate the host callable functions using the `__host__` annotation. Then in the launcher you'd pass the name of that function and it would call it. They'd have call arguments and wouldn't use globals to pass data between host and device. The Cuda model is superior, period.
+
+The reason being is that you could codegen all the Cuda `__host__` kernels into a single string and compile them all at once. While UPMEM you'd have to compile all the kernels separately, and pay the cost of all those reruns and library includes. Admittedly, the UPMEM compiler is pretty fast. It is definitely faster than NVCC, but doing it like this would definitely add to the compilation time. And the pervasive use of globals locks UPMEM into its current model.
+
+It also uses globals to declare concurrency primitives like mutexes, but those should be creates in the kernel and shared through WRAM for the same reason. It woulnd't be that much harder to create a library function to do it. UPMEM's language architects were lazy in places where it they shouldn't have been.
+
+## Ugly: Using Symbol Names For Accessing Variable From Host
+
+Unlike in Cuda where you pass in the method name, and the call arguments, in UPMEM you allocate a `DpuSet` and then copy to its global variables. The lead compiler dev who introduced me to this said that this is similar to OpenCL, but I checked and OpenCL is using integer indices to set its call arguments. In UPMEM kernels instead of using integers, you use strings which would be a lot slower as you need a linear string search in order to figure out where a variable's address is.
+
+It doesn't really matter for this demo, and I do not have the intent of using UPMEM's chips on my own, and I've automated the variable transfers away, so who cares, but this design decision really sticks out at me at how bizzare it is.
+
+I never expected to praise Cuda in my life, but UPMEM's language designers should have just done what Cuda's designers have and they would have been better off. I asked the lead compiler dev why things were made this way, and didn't get an answer so let me speculate.
+
+I think when a kernel has many variables, it is a lot easier to give them intelligible names and assign to those than call a function. Imagine how an average UPMEM function would look like. You can only transfer primitives, so you'd have something like: int, int, int, int, int * ...all next to each other, and that is difficult to deal with. I myself have had trouble when a function takes in two strings next to each other.
+
+So yeah, if you want to make programming in C easier, you might do something like that. Make it so that you can assign the globals by name.
+
+But from the perspective of compilation from a higher level language like Spiral, there is no benefit to this at all, only a performance drain when launching kernels. The same goes for the use of globals.
+
+Spiral has nominals, records, tuples, inverse arrays and other kinds of informative types, and takes care that the variables are propagated past language boundary correctly.
+
+Note to future designers - don't do what UPMEM here did, which is spend time trying to make C better. Just call me up and I'll make a Spiral backend for you instead.
+
+## Bad: AI Capabilities
+
+DPUs have poor floating point support. Even though they have a lot of RAM, then can't be used as a stand-in for the main system RAM. Also DPUs can only communicate with each other by going through host, which is a performance killer. In that PIM course that I linked in the first paragraph of this article, take note of how many PIM chips from its competitors will have floating point capabilities. Those companies are gearing up to enter the AI arena and challenge Nvidia. I love that.
+
+UPMEM's DPUs are already boring and nobody has even heard about them. It is not even long term. Primitive integer devices are not going to do well in the world we are heading into.
+
+The company has a foundation and room to maneuver, but standing still will be death for it.
+
+## Bad: The Silent Treatment
+
+I had a jolly time interacting with the UPMEM lead compiler dev for the first two days. We seemed to have hit it off well, and he pointed me to the simulator and offered to answer any questions that I might have. And then what I've experienced is the classic 'ghosting' whenever you try to make a person on the Internet use their brain. I messaged him a couple of times over the span of a week, but haven't gotten any of my questions answered. He said he would answer as far as his energy allows, but I doubt I even took up 10m of his time. Was it my based aura that scared him off?
+
+I can't be sure of anything, but I guess working with UPMEM is off the table. I can only hope their competitors like this article instead.
+
+# Conclussion
+
+If you are in the AI/PIM hardware space, and you want inverse arrays as well as integration with Python, .NET or literally any ecosystem out there in a high level functional programming language, don't be afraid to get in touch. I'd love to give programming new hardware a try. My email is in my Github profile. If I don't answer that is definitely because of the spam filter, so try opening an issue here or on the Spiral repo in that case.
+
+Since I have one novel hardware backend done, as well as inverse arrays, which will serve as the foundation for future ones, hopefully in a future article I can show something more interesting.
