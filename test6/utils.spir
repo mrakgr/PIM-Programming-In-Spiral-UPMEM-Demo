@@ -3,7 +3,7 @@ open real_core
 inl roundup a b = (a + (b - 1u32)) / b * b
 
 // Iterates over the tuple of free vars returning var tags mapped to a linear sequence of integer indices.
-// This is intented to be in the order the call args would get generated in the kernel.
+// This is intended to be in the order the call args would get generated in the kernel.
 inl dpu_tags vars =
     inl rec loop s i = function
         | () => s

@@ -50,7 +50,7 @@ inl dpu_arrays offset f =
 inl dpu_arrays_transfer dpu arrays = record_iter (fun {key value={var offset}} => dpu_push_array dpu var offset) arrays
 
 // Iterates over the tuple of free vars returning var tags mapped to a linear sequence of integer indices.
-// This is intented to be in the order the call args would get generated in the kernel.
+// This is intended to be in the order the call args would get generated in the kernel.
 inl dpu_tags vars =
     inl rec loop s i = function
         | () => s

@@ -1,4 +1,4 @@
-// Does the most basic kernel run succesfully?
+// Does the most basic kernel run successfully?
 
 inl main () = 
     global "import os"
