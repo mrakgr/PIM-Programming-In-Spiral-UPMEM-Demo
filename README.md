@@ -2145,6 +2145,8 @@ The company has a foundation and room to maneuver, but standing still will be de
 
 I had a jolly time interacting with the UPMEM lead compiler dev for the first two days. We seemed to have hit it off well, and he pointed me to the simulator and offered to answer any questions that I might have. And then what I've experienced is the classic 'ghosting' whenever you try to make a person on the Internet use their brain. I messaged him a couple of times over the span of a week, but haven't gotten any of my questions answered. He said he would answer as far as his energy allows, but I doubt I even took up 10m of his time. Was it my based aura that scared him off?
 
+I also tried emailing the company support with some questions I had, but didn't get a reply from them either.
+
 I can't be sure of anything, but I guess working with UPMEM is off the table. I can only hope their competitors like this article instead.
 
 # Conclusion
