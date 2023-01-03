@@ -1955,8 +1955,10 @@ Rust.
 
 Rust has famously huge executables.
 
-https://www.google.com/search?q=rust+hello+world+size
-https://www.google.com/search?q=rust+runtime&oq=rust+runtime
+Google Search: [Rust Hello World Size](https://www.google.com/search?q=rust+hello+world+size)
+
+Google Search: [Rust Runtime](https://www.google.com/search?q=rust+runtime&oq=rust+runtime)
+
 > How big is the Rust runtime?
 > The default Rust helloworld (as made with cargo new ) doesn't have any unique dynamic dependencies, holding everything but basic C runtime stuff in a 1.6M executable; with tweaks (optimize for size, using LTO, aborting on panic), it drops to 0.6M
 
@@ -2052,6 +2054,7 @@ The reason is that there simply isn't any other design direction to take. Rust f
 You'll be writing code like this:
 
 https://github.com/CMU-SAFARI/prim-benchmarks/blob/main/VA/host/app.c
+
 https://github.com/CMU-SAFARI/prim-benchmarks/blob/main/VA/dpu/task.c
 
 That is a lot of work for adding two vectors together! You can't abstract this in a language like C. UPMEM has a Python backend, so the stuff on the host side would be less verbose, but still you'd need to handle passing all those ints, int pointers, copying to MRAM and back by yourself.
@@ -2078,7 +2081,7 @@ Had better algorithms been discovered, you'd have these AI startups targeting th
 
 It is a chicken and an egg problem. More than just servicing these AI chip companies, I need their hardware to do research and GPUs won't suffice, but all of a sudden I am priced out of the game because the needed research hasn't been done.
 
-At first I thought that I could just leave it to the ML community to find better algorithms, but now I feel it is my own responsibility since they are so incompetent. It is not like I am any better. I tried figuring it out for many years, and couldn't discover anything tangible. So the vision that I had is that if a piece of hardware is powerful enough, it would be possible to write a [genetic programming](https://www.google.com/search?q=genetic+programming&oq=genetic+programming) system and have it infer the right way to use the hardware. In essence, good enough hardware is also a catalyst for algorithmic discovery. Good enough hardware will tell you how to use it on its own...assuming the language you have to interact with it is good enough.
+At first I thought that I could just leave it to the ML community to find better algorithms, but now I feel it is my own responsibility since they are so incompetent. It is not like I am any better. I tried figuring it out for many years, and couldn't discover anything tangible. So the vision that I had is that if a piece of hardware is powerful enough, it would be possible to write a [genetic programming](https://www.google.com/search?q=genetic+programming) system and have it infer the right way to use the hardware. In essence, good enough hardware is also a catalyst for algorithmic discovery. Good enough hardware will tell you how to use it on its own...assuming the language you have to interact with it is good enough.
 
 Well, isn't it great that I have Spiral? It would be hard to do this kind of research in C.
 
