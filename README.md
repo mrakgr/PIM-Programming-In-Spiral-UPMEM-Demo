@@ -80,7 +80,7 @@ If you are a person working on novel hardware and want better software support, 
 
 If you want to run these example you need:
 
-* Spiral v2.3.6 is what this article was written in. You can get it as an VS Code extension.
+* Spiral v2.3.6 is what the examples in this article were compiled in. You can get it as an VS Code extension.
 * The UPMEM SDK. [Here](https://sdk.upmem.com/2021.4.0/01_Install.html) are the install instructions.
 * (Opt) If you are on Windows like me, just install [WSL](https://learn.microsoft.com/en-us/windows/wsl/install). My distro is Ubuntu 20.04.1.
 
