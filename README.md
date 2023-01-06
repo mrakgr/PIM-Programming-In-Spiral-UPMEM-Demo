@@ -80,7 +80,7 @@ If you are a person working on novel hardware and want better software support, 
 
 If you want to run these example you need:
 
-* Spiral v2.3.6. You can get it as an VS Code extension.
+* Spiral v2.3.7. You can get it as an VS Code extension.
 * The UPMEM SDK. [Here](https://sdk.upmem.com/2021.4.0/01_Install.html) are the install instructions.
 * (Opt) If you are on Windows like me, just install [WSL](https://learn.microsoft.com/en-us/windows/wsl/install). My distro is Ubuntu 20.04.1.
 
@@ -166,7 +166,7 @@ inl main () =
     ()
 ```
 
-In VS Code using the Spiral v2.3.6 compiler, I compile the above using Ctrl + F1 into `main.py`, start up the `powershell` terminal, go into `wsl`, source the UPMEM variables using `. ~/upmem-sdk/upmem_env.sh` and then run the following. I also don't forget to Ctrl + , into Settings and search for Spiral before picking the UPMEM backend.
+In VS Code using the Spiral compiler, I compile the above using Ctrl + F1 into `main.py`, start up the `powershell` terminal, go into `wsl`, source the UPMEM variables using `. ~/upmem-sdk/upmem_env.sh` and then run the following. I also don't forget to Ctrl + , into Settings and search for Spiral before picking the UPMEM backend.
 
 ```
 mrakgr@Lain:/mnt/e/PIM-Programming-In-Spiral-UPMEM-Demo/test8$ python3 main.py
