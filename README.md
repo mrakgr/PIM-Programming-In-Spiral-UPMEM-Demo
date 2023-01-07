@@ -24,12 +24,12 @@
         - [main2](#main2)
     - [test8 (Part 2)](#test8-part-2)
 - [Motivational Article](#motivational-article)
-    - [Why This Is So Great](#why-this-is-so-great)
-    - [What Is Not Great About Spiral](#what-is-not-great-about-spiral)
-    - [What Is Truly Great About Spiral](#what-is-truly-great-about-spiral)
-    - [Another Cool Thing About Spiral](#another-cool-thing-about-spiral)
-    - [A Look At The Future](#a-look-at-the-future)
-    - [A Look At The Present](#a-look-at-the-present)
+    - [Staged Functional Programming - Why This Is So Great](#staged-functional-programming---why-this-is-so-great)
+    - [Comparison Of Spiral With Other Languages In Their Own Niche - What Is Not Great About Spiral](#comparison-of-spiral-with-other-languages-in-their-own-niche---what-is-not-great-about-spiral)
+    - [Spiral's Niche - What Is Truly Great About Spiral](#spirals-niche---what-is-truly-great-about-spiral)
+    - [Cross Platform Specialization - Another Cool Thing About Spiral](#cross-platform-specialization---another-cool-thing-about-spiral)
+    - [Programming Heterogenous Architectures - A Look At The Future](#programming-heterogenous-architectures---a-look-at-the-future)
+    - [Absolute Dominance Of Backpropagation - A Look At The Present](#absolute-dominance-of-backpropagation---a-look-at-the-present)
 - [Conclusion](#conclusion)
 
 <!-- /TOC -->
@@ -1925,7 +1925,7 @@ And that is how all this works! Pretty good, right? This is the right way to wri
 
 # Motivational Article
 
-## Why This Is So Great
+## Staged Functional Programming - Why This Is So Great
 
 It might not seem impressive at first glance, since all I am doing is passing runtime variables across different backends, but this kind of task is impossible to abstract away unless you have your own language. Without the ability to nest backends in a language you'd need to write explicit wrappers and custom interfaces for everything, and drop down to a C style of programming to get it done. No amount of programming skill can get you through this challenge. You need the right tool to go along with it.
 
@@ -1933,7 +1933,7 @@ I couldn't have done this back in 2015,2016 or 2017. In 2018 I had something usa
 
 That is why I am hoping that people will recognize the greatness of the kind of radical simplicity that I've demonstrated here and adopt the staged functional style of programming. It would make a large difference when programming heterogeneous computer architectures. Spiral's competition is formidable in their own niches, but will prove to be inadequate in the era of heterogeneous architectures. Let me say a few words about that...
 
-## What Is Not Great About Spiral
+## Comparison Of Spiral With Other Languages In Their Own Niche - What Is Not Great About Spiral
 
 First of all, let me do an overview of what Spiral is not competing against. At the time of writing it has a F#, C and Python backends in addition to the UPMEM one presented here.
 
@@ -1945,7 +1945,7 @@ Compared to Python, Spiral has minimal advantages when using it as a platform. I
 
 If you try programming in Spiral and target F# or Python, you'll quickly see a huge disadvantage of having to use macros for everything. No editor support. No autocomplete. And this really matters to one's enjoyment of programming in a language.
 
-## What Is Truly Great About Spiral
+## Spiral's Niche - What Is Truly Great About Spiral
 
 It is essentially times like this. A company has a novel piece of hardware. It has maybe a Python and a C backend, and is filled to the brim with low level C programmers. Maybe it is aware that interop with existing platforms as well as writing reusable libraries is a problem it needs to resolve, but has no idea how to proceed. None of the existing languages offer a clean solution to this problem.
 
@@ -1978,7 +1978,7 @@ Could a Julia or a Rust or some other language expert boast about the same thing
 
 And as a language Spiral is very expressive. Going from programming the kernels in a low level language like C to a high level functional language like Spiral would result in a huge increase in productivity.
 
-## Another Cool Thing About Spiral
+## Cross Platform Specialization - Another Cool Thing About Spiral
 
 Spiral offers you unparalleled control over specialization. Going back to an earlier example.
 
@@ -2045,7 +2045,7 @@ This would be 4 input variables. One of them is the array length, and the others
 
 Imagine trying to do this in a language like C++. How much messing with templates would enabling this kind of specialization require? In Spiral this is very easy.
 
-## A Look At The Future
+## Programming Heterogenous Architectures - A Look At The Future
 
 When I imagine the future, it might not be just the CPU calling out to the DPU like in this backend here. Maybe the CPU will need to send data over language boundaries to an UPI which might then call its own local GPU. There might be arbitrary hierarchies of hardware, each having their local memory. Dynamic languages have really had a field day over the last few decades, but the move towards PIM programming will be a bottleneck event. Maybe people will overlook the work I did on Spiral. But if so, I feel it is absolutely certain that a language with strong partial evaluation capabilities will emerge dominant in this new environment.
 
@@ -2069,7 +2069,7 @@ At first I didn't set out to make a language. That would have taken too long. So
 
 The lesson from all of this is that languages are fancy code generators. If you really have a need so pressing that you need to build a codegen, you should be careful because that is the gateway drug to full blown PL development.
 
-## A Look At The Present
+## Absolute Dominance Of Backpropagation - A Look At The Present
 
 What tripped me up in my programming path is that I didn't expect the backpropagation algorithm would be dominant for so long. It is very poorly suited to reinforcement learning, and everything I want to do with ML involves that. In the mid-2010s I thought that if I gave the field a couple of years to play around, they would surely figure out something better. They didn't. The field right now is very disgusting, and it is all a consequence of the lack of the foreseen algorithmic development. It also impacted the behavior of AI chip companies in a way that does not suit me.
 
