@@ -1,0 +1,9 @@
+packages: |core-
+modules:
+    inv
+    upmem
+    upmem_loop
+    utils_real*
+    utils
+    nominal_example
+    main

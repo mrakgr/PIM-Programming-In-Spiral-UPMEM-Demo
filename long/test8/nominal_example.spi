@@ -1,0 +1,5 @@
+nominal qwe = i32 * `( "Hello." )
+
+inl main() =
+    inl x = real qwe (1, true) // Error during partial evaluation.
+    ()

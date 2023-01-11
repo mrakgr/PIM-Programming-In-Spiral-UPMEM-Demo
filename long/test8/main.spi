@@ -36,7 +36,12 @@ inl main () =
         zip (arange test_size)
         <| zip (arange test_size)
         <| arange test_size
+    inl input = rezip (fun x,y,z => {x y z}) input
     $"print(!input)"
-    inl output = map (fun x, y, z => x+y+z,x*y*z) input
+    inl output = 
+        map (fun {x y z} => 
+            inl sqr x = x*x
+            sqr (x + y + z)
+            ) input
     $"print(!output)"
     ()
