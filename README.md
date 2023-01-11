@@ -9,13 +9,13 @@
 
 # Intro
 
-I am demoing the UPMEM Python + C backend for Spiral here. I want Spiral to be a language suitable for future generations of computing devices, and since UPMEM commercialized the first PIM chip, it is the ideal target for a demo. These backends are easy to make. They can be done in 0.5-1 week's time, after which one can go from the level of programming in C to a level of programming in a highly expressive functional language. One of the goals of Spiral's design is to be efficient enough for writing GPU kernels in it, and it has been met. Spiral has the most efficient possible design for a functional language without sacrificing expressivity.
+I am demoing the UPMEM Python + C backend for [Spiral](https://github.com/mrakgr/The-Spiral-Language) here. I want Spiral to be a language suitable for future generations of computing devices, and since UPMEM commercialized the first PIM chip, it is the ideal target for a demo. These backends are easy to make. They can be done in 0.5-1 week's time, after which one can go from the level of programming in C to a level of programming in a highly expressive functional language. One of the goals of Spiral's design is to be efficient enough for writing GPU kernels in it, and it has been met. Spiral has the most efficient possible design for a functional language without sacrificing expressivity.
 
 Spiral's intended niche is not any device or platform in particular, but the intersection of them. Spiral is peerlessly well-suited for heterogeneous computing architectures of the future, and trivializes the data transfer between different pieces of hardware in the system.
 
 I hope to get support for this kind of work, so that I can demonstrate my claims on different classes of hardware. If you are a company struggling with C programming on some novel piece of hardware, don't hesitate to get in touch. Going from programming in a language like C to programming in a high level language like Spiral will hugely raise your productivity. 
 
-At the moment, I am also open for paid work on such systems personally. I'd find it satisfying to significantly improve your company's efficiency in programming using the power of (staged) functional programming, so if you find C programming torturous and are open minded enough to try it, don't hesitate to get in touch. Spiral offers a novel programming style that does not have the inefficiencies associated with regular functional PLs and is suitable for devices with restricted memory.
+At the moment, I am also open for paid work on such systems personally. I'd find it satisfying to significantly improve your company's efficiency in programming using the power of (staged) functional programming, so if you find C programming torturous and are open minded enough to try it, please give me a call. Spiral offers a novel programming style that does not have the inefficiencies associated with regular functional PLs and is suitable for devices with restricted memory.
 
 ## Main Points Of The Example
 
