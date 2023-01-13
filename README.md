@@ -9,7 +9,7 @@
 
 # Intro
 
-I am demoing the UPMEM Python + C backend for [Spiral](https://github.com/mrakgr/The-Spiral-Language) here. I want Spiral to be a language suitable for future generations of computing devices, and since UPMEM commercialized the first PIM chip, it is the ideal target for a demo. These backends are easy to make. They can be done in 0.5-1 week's time, after which one can go from the level of programming in C to a level of programming in a highly expressive functional language. One of the goals of Spiral's design is to be efficient enough for writing GPU kernels in it, and it has been met. Spiral has the most efficient possible design for a functional language without sacrificing expressivity.
+I am demoing the UPMEM Python + C backend for [Spiral](https://github.com/mrakgr/The-Spiral-Language) here. I want Spiral to be a language suitable for future generations of computing devices, and since [UPMEM](https://www.upmem.com/) commercialized the first PIM chip, it is the ideal target for a demo. These backends are easy to make. They can be done in 0.5-1 week's time, after which one can go from the level of programming in C to a level of programming in a highly expressive functional language. One of the goals of Spiral's design is to be efficient enough for writing GPU kernels in it, and it has been met. Spiral has the most efficient possible design for a functional language without sacrificing expressivity.
 
 Spiral's intended niche is not any device or platform in particular, but the intersection of them. Spiral is peerlessly well-suited for heterogeneous computing architectures of the future, and trivializes the data transfer between different pieces of hardware in the system.
 
