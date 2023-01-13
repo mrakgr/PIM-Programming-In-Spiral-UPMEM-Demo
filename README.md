@@ -13,9 +13,7 @@ I am demoing the UPMEM Python + C backend for [Spiral](https://github.com/mrakgr
 
 Spiral's intended niche is not any device or platform in particular, but the intersection of them. Spiral is peerlessly well-suited for heterogeneous computing architectures of the future, and trivializes the data transfer between different pieces of hardware in the system.
 
-I hope to get support for this kind of work, so that I can demonstrate my claims on different classes of hardware. If you are a company struggling with C programming on some novel piece of hardware, don't hesitate to get in touch. Going from programming in a language like C to programming in a high level language like Spiral will hugely raise your productivity. 
-
-At the moment, I am also open for paid work on such systems personally. I'd find it satisfying to significantly improve your company's efficiency in programming using the power of (staged) functional programming, so if you find C programming torturous and are open minded enough to try it, please give me a call. Spiral offers a novel programming style that does not have the inefficiencies associated with regular functional PLs and is suitable for devices with restricted memory.
+I hope to get support for this kind of work, so that I can demonstrate my claims on different classes of hardware. Also, I myself am interested in work in the embedded and AI accelerator space. I am not interested in working with low level languages like C, but it would be fun to program novel hardware in a high level functional language that despite the abstraction capabilities it has is as efficient as C. If you do significant work on hardware that has only low level languages for it, and would like to hugely improve your productivity by going to a higher level language, please get in touch with me.
 
 ## Main Points Of The Example
 
